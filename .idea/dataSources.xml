@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="lottery" uuid="14d96fa7-2d5a-47f0-b83e-0ca52dacc85e">
+    <data-source source="LOCAL" name="lottery [2]" uuid="59234aa6-a135-49d3-8127-c7822d3ea61d">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:D:\Uni\Computer Science\Y2\LotteryWebApp2\instance\lottery.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:C:\Computer Science\Y2\CSC2031\LotteryWebApp2\instance\lottery.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
       <libraries>
-        <library>
-          <url>file://$APPLICATION_CONFIG_DIR$/jdbc-drivers/Xerial SQLiteJDBC/3.39.2/sqlite-jdbc-3.39.2.jar</url>
-        </library>
         <library>
           <url>file://$APPLICATION_CONFIG_DIR$/jdbc-drivers/Xerial SQLiteJDBC/3.39.2/sqlite-jdbc-3.39.2.jar</url>
         </library>

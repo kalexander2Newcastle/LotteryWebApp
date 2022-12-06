@@ -3,7 +3,9 @@ from flask import Blueprint, render_template, flash, redirect, url_for
 
 from app import db
 from models import User
-from users.forms import RegisterForm
+from users.forms import RegisterForm, LoginForm
+import bcrypt
+from bcrypt import checkpw
 
 # CONFIG
 users_blueprint = Blueprint('users', __name__, template_folder='templates')
@@ -45,9 +47,18 @@ def register():
 
 
 # view user login
-@users_blueprint.route('/login')
+@users_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
-    return render_template('users/login.html')
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if not user or not bcrypt.checkpw(form.password.data.encode('utf-8'), user.password):
+            flash('Please check your login details and try again')
+            return render_template('users/login.html', form=form)
+        return redirect(url_for('users.profile'))
+
+    return render_template('users/login.html', form=form)
+
 
 
 # view user profile
