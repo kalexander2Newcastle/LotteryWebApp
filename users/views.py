@@ -5,7 +5,7 @@ from app import db
 from models import User
 from users.forms import RegisterForm, LoginForm
 import bcrypt
-from bcrypt import checkpw
+
 
 # CONFIG
 users_blueprint = Blueprint('users', __name__, template_folder='templates')
@@ -51,14 +51,14 @@ def register():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
+        user = User.query.filter_by(email=form.email.data).first()
         if not user or not bcrypt.checkpw(form.password.data.encode('utf-8'), user.password):
             flash('Please check your login details and try again')
             return render_template('users/login.html', form=form)
-        return redirect(url_for('users.profile'))
 
-    return render_template('users/login.html', form=form)
-
+        return render_template('users/profile.html')
+    else:
+        return render_template('users/login.html', form=form)
 
 
 # view user profile
