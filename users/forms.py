@@ -40,6 +40,7 @@ class RegisterForm(FlaskForm):
 class LoginForm(FlaskForm):
     email = StringField(validators=[DataRequired(), Email()])
     password = PasswordField(validators=[DataRequired()])
+    pin = StringField(validators=[DataRequired(), Length(min=6, max=6)])
     recaptcha = RecaptchaField()
 
     submit = SubmitField()

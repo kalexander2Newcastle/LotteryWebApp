@@ -1,8 +1,9 @@
 # IMPORTS
 import os
 
-from flask import Flask, render_template
+from flask import Flask, render_template, session, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+
 
 # CONFIG
 app = Flask(__name__)
@@ -41,6 +42,9 @@ def internal_service_error(error):
 @app.errorhandler(503)
 def service_unavailable(error):
     return render_template("errors/503.html"), 503
+
+
+
 
 
 # HOME PAGE VIEW

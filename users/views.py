@@ -1,5 +1,7 @@
 # IMPORTS
-from flask import Blueprint, render_template, flash, redirect, url_for
+import pyotp
+from flask import Blueprint, render_template, flash, redirect, url_for, session
+from markupsafe import Markup
 
 from app import db
 from models import User
@@ -50,11 +52,34 @@ def register():
 @users_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+
+    if not session.get('authentication_attempts'):
+        session['authentication_attempts'] = 0
+
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-        if not user or not bcrypt.checkpw(form.password.data.encode('utf-8'), user.password):
-            flash('Please check your login details and try again')
-            return render_template('users/login.html', form=form)
+
+        # Generates salt
+        Psalt = bcrypt.gensalt()
+
+        # Creates a new variable 'Bpassword' and converts it into bytes
+        Bpassword = user.password.encode('utf-8')
+
+        # Hashing the new byte-converted password
+        Bpassword_hash = bcrypt.hashpw(Bpassword, Psalt)
+
+        if not user \
+                or not bcrypt.checkpw(form.password.data.encode('utf-8'), Bpassword_hash) \
+                or not pyotp.TOTP(user.pinkey).verify(form.pin.data):
+
+                    session['authentication_attempts'] += 1
+                    if session.get('authentication_attempts') >= 3:
+                        flash(Markup('Number of incorrect login attempts exceeded. '
+                                     'Please click <a href="/reset">here</a> to reset.'))
+                        return render_template('users/login.html')
+                    flash('Please check your login details and try again, {} login attempts remaining'
+                          .format(3 - session.get('authentication_attempts')))
+                    return render_template('users/login.html', form=form)
 
         return render_template('users/profile.html')
     else:
@@ -66,6 +91,10 @@ def login():
 def profile():
     return render_template('users/profile.html', name="PLACEHOLDER FOR FIRSTNAME")
 
+@users_blueprint.route('/reset')
+def reset():
+    session['authentication_attempts'] = 0
+    return redirect(url_for('users.login'))
 
 # view user account
 @users_blueprint.route('/account')
