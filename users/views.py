@@ -1,10 +1,10 @@
 # IMPORTS
 import pyotp
 from flask import Blueprint, render_template, flash, redirect, url_for, session
-from flask_login import login_user, logout_user, login_manager
+from flask_login import login_user, logout_user, login_required, current_user
 from markupsafe import Markup
 
-from app import db, app
+from app import db
 from models import User
 from users.forms import RegisterForm, LoginForm
 import bcrypt
@@ -93,8 +93,9 @@ def logout():
 
 # view user profile
 @users_blueprint.route('/profile')
+@login_required
 def profile():
-    return render_template('users/profile.html', name="PLACEHOLDER FOR FIRSTNAME")
+    return render_template('users/profile.html', name=current_user.firstname)
 
 
 @users_blueprint.route('/reset')
@@ -105,10 +106,11 @@ def reset():
 
 # view user account
 @users_blueprint.route('/account')
+@login_required
 def account():
     return render_template('users/account.html',
-                           acc_no="PLACEHOLDER FOR USER ID",
-                           email="PLACEHOLDER FOR USER EMAIL",
-                           firstname="PLACEHOLDER FOR USER FIRSTNAME",
-                           lastname="PLACEHOLDER FOR USER LASTNAME",
-                           phone="PLACEHOLDER FOR USER PHONE")
+                           acc_no=current_user.id,
+                           email=current_user.email,
+                           firstname=current_user.firstname,
+                           lastname=current_user.lastname,
+                           phone=current_user.phone)

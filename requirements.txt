@@ -5,4 +5,5 @@ flask_wtf
 email_validator
 WTForms~=3.0.1
 bcrypt~=4.0.1
-pyotp
+pyotp~=2.7.0
+MarkupSafe~=2.1.1
