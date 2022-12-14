@@ -1,4 +1,7 @@
 # IMPORTS
+from datetime import datetime
+from functools import wraps
+
 import pyotp
 from flask import Blueprint, render_template, flash, redirect, url_for, session
 from flask_login import login_user, logout_user, login_required, current_user
@@ -59,17 +62,8 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
 
-        # Generates salt
-        Psalt = bcrypt.gensalt()
-
-        # Creates a new variable 'Bpassword' and converts it into bytes
-        Bpassword = user.password.encode('utf-8')
-
-        # Hashing the new byte-converted password
-        Bpassword_hash = bcrypt.hashpw(Bpassword, Psalt)
-
         if not user \
-                or not bcrypt.checkpw(form.password.data.encode('utf-8'), Bpassword_hash) \
+                or not bcrypt.checkpw(form.password.data.encode('utf-8'), user.password) \
                 or not pyotp.TOTP(user.pinkey).verify(form.pin.data):
             session['authentication_attempts'] += 1
             if session.get('authentication_attempts') >= 3:
@@ -79,8 +73,18 @@ def login():
             flash('Please check your login details and try again, {} login attempts remaining'
                   .format(3 - session.get('authentication_attempts')))
             return render_template('users/login.html', form=form)
-        login_user(user)
-        return render_template('users/profile.html')
+
+        if user:
+            login_user(user)
+            user.last_login = user.current_login
+            user.current_login = datetime.now()
+            db.session.add(user)
+            db.session.commit()
+            if current_user.role == 'users':
+                return redirect(url_for('users.profile'))
+            else:
+                return redirect(url_for('admin.admin'))
+
     else:
         return render_template('users/login.html', form=form)
 
@@ -114,3 +118,16 @@ def account():
                            firstname=current_user.firstname,
                            lastname=current_user.lastname,
                            phone=current_user.phone)
+
+
+def requires_roles(*roles):
+    def wrapper(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            if current_user.role not in roles:
+                return render_template('errors/403.html')
+            return f(*args, **kwargs)
+
+        return wrapped
+
+    return wrapper

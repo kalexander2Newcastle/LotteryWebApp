@@ -29,27 +29,41 @@
                             <a href="{{ url_for('index') }}" class="navbar-item">
                                Home
                             </a>
+                            {% if current_user.is_authenticated and current_user.role == 'user' %}
                             <a href="{{ url_for('users.profile') }}" class="navbar-item">
                                Profile
+                            {% endif %}
                             </a>
+                           {% if current_user.is_authenticated and current_user.role == 'user' %}
                             <a href="{{ url_for('lottery.lottery') }}" class="navbar-item">
                                     Lottery
+                           {% endif %}
                             </a>
+                           {% if current_user.is_authenticated and current_user.role == 'admin' %}
                             <a href="{{ url_for('admin.admin') }}" class="navbar-item">
-                                Admin
+                                    Admin
+                            {% endif %}
                             </a>
+                            {% if not current_user.is_authenticated %}
                             <a href="{{ url_for('users.login') }}" class="navbar-item">
                                 Login
+                            {% endif %}
                             </a>
+                            {% if not current_user.is_authenticated %}
                             <a href="{{ url_for('users.register') }}" class="navbar-item">
                                 Register
+                            {% endif %}
                             </a>
+                            {% if current_user.is_authenticated %}
                             <a href="{{ url_for('users.account') }}" class="navbar-item">
                                 Account
+                            {% endif %}
                             </a>
                             {#TODO: LOGOUT#}
+                            {% if current_user.is_authenticated %}
                             <a href="{{ url_for('users.logout')}}" class="navbar-item">
                                 Log out
+                            {% endif %}
                             </a>
                        </div>
                     </div>

@@ -21,6 +21,9 @@ class User(db.Model, UserMixin):
     phone = db.Column(db.String(100), nullable=False)
     role = db.Column(db.String(100), nullable=False, default='user')
     pinkey = db.Column(db.String(100), nullable=False)
+    registered_on = db.Column(db.DateTime, nullable=False)
+    current_login = db.Column(db.DateTime, nullable=True)
+    last_login = db.Column(db.DateTime, nullable=True)
 
     # Define the relationship to Draw
     draws = db.relationship('Draw')
@@ -30,9 +33,12 @@ class User(db.Model, UserMixin):
         self.firstname = firstname
         self.lastname = lastname
         self.phone = phone
-        self.password = password
+        self.password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         self.role = role
         self.pinkey = pyotp.random_base32()
+        self.registered_on = datetime.now()
+        self.current_login = None
+        self.last_login = None
 
 
 

@@ -74,5 +74,21 @@ def load_user(id):
     return User.query.get(int(id))
 
 
+import logging
+
+
+class SecurityFilter(logging.Filter):
+    def filter(self, record):
+        return 'SECURITY' in record.getMessage()
+
+
+logger = logging.getLogger()
+file_handler = logging.FileHandler('lottery.log', 'a')
+file_handler.addFilter(SecurityFilter())
+formatter = logging.Formatter('%(asctime)s : %(message)s', '%m/%d/%Y %I:%M:%S %p')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+
+
 if __name__ == "__main__":
     app.run()
