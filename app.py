@@ -5,6 +5,24 @@ from flask import Flask, render_template, session, redirect, url_for
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 
+import logging
+
+
+# Security Filter
+class SecurityFilter(logging.Filter):
+    def filter(self, record):
+        return 'SECURITY' in record.getMessage()
+
+
+# Logger
+logger = logging.getLogger()
+file_handler = logging.FileHandler('lottery.log', 'a')
+file_handler.setLevel(logging.WARNING)
+file_handler.addFilter(SecurityFilter())
+formatter = logging.Formatter('%(asctime)s : %(message)s', '%m/%d/%Y %I:%M:%S %p')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+
 # CONFIG
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'LongAndRandomSecretKey'
@@ -72,22 +90,6 @@ from models import User
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(int(id))
-
-
-import logging
-
-
-class SecurityFilter(logging.Filter):
-    def filter(self, record):
-        return 'SECURITY' in record.getMessage()
-
-
-logger = logging.getLogger()
-file_handler = logging.FileHandler('lottery.log', 'a')
-file_handler.addFilter(SecurityFilter())
-formatter = logging.Formatter('%(asctime)s : %(message)s', '%m/%d/%Y %I:%M:%S %p')
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
 
 
 if __name__ == "__main__":

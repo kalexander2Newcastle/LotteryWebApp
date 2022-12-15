@@ -1,9 +1,10 @@
 # IMPORTS
+import logging
 from datetime import datetime
 from functools import wraps
 
 import pyotp
-from flask import Blueprint, render_template, flash, redirect, url_for, session
+from flask import Blueprint, render_template, flash, redirect, url_for, session, request
 from flask_login import login_user, logout_user, login_required, current_user
 from markupsafe import Markup
 
@@ -41,6 +42,12 @@ def register():
                         password=form.password.data,
                         role='user')
 
+        # Logging registration data
+        logging.warning('SECURITY - User registration [%s, %s]',
+                        form.firstname.data,
+                        request.remote_addr
+                        )
+
         # add the new user to the database
         db.session.add(new_user)
         db.session.commit()
@@ -66,6 +73,11 @@ def login():
                 or not bcrypt.checkpw(form.password.data.encode('utf-8'), user.password) \
                 or not pyotp.TOTP(user.pinkey).verify(form.pin.data):
             session['authentication_attempts'] += 1
+            # Log invalid login
+            logging.warning('SECURITY - Invalid Login Attempt [%s, %s]',
+                            form.email.data,
+                            request.remote_addr
+                            )
             if session.get('authentication_attempts') >= 3:
                 flash(Markup('Number of incorrect login attempts exceeded. '
                              'Please click <a href="/reset">here</a> to reset.'))
@@ -76,11 +88,16 @@ def login():
 
         if user:
             login_user(user)
+            logging.warning('SECURITY - User log in [%s, %s, %s]',
+                            current_user.id,
+                            current_user.firstname,
+                            request.remote_addr
+                            )
             user.last_login = user.current_login
             user.current_login = datetime.now()
             db.session.add(user)
             db.session.commit()
-            if current_user.role == 'users':
+            if current_user.role == 'user':
                 return redirect(url_for('users.profile'))
             else:
                 return redirect(url_for('admin.admin'))
@@ -91,6 +108,11 @@ def login():
 
 @users_blueprint.route('/logout')
 def logout():
+    logging.warning('SECURITY - User log out [%s, %s, %s]',
+                    current_user.id,
+                    current_user.firstname,
+                    request.remote_addr
+                    )
     logout_user()
     return render_template('main/index.html')
 
@@ -125,6 +147,12 @@ def requires_roles(*roles):
         @wraps(f)
         def wrapped(*args, **kwargs):
             if current_user.role not in roles:
+                logging.warning('SECURITY - Unauthorised Access [%s, %s, %s, %s]',
+                                current_user.id,
+                                current_user.firstname,
+                                current_user.role,
+                                request.remote_addr
+                                )
                 return render_template('errors/403.html')
             return f(*args, **kwargs)
 
