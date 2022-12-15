@@ -5,12 +5,14 @@ from wtforms.validators import DataRequired, Email, ValidationError, Length, Equ
 import re
 
 
+# Function to check phone number is of format (0000-000-0000)
 def validate_phone(self, StringField):
     p = re.compile(r"\d{4}[-]\d{3}[-]\d{4}$")
     if not p.match(StringField.data):
         raise ValidationError("Please enter a phone number using a valid format (0000-000-0000)")
 
 
+# Function to check user data against excluded characters
 def character_check(form, field):
     excluded_chars = "*?!'^+%&/()=}][{$#@<>"
     for char in field.data:
@@ -19,11 +21,13 @@ def character_check(form, field):
 
 
 class RegisterForm(FlaskForm):
+    # Displays fields for user information with appropriate validators
     email = StringField(validators=[DataRequired(), Email("Please enter a valid email address.")])
     firstname = StringField(validators=[DataRequired(), character_check])
     lastname = StringField(validators=[DataRequired(), character_check])
     phone = StringField(validators=[DataRequired(), validate_phone])
 
+    # Displays field for password with appropriate validators to ensure good password strength and integrity
     password = PasswordField(validators=[DataRequired(), Length(min=6, max=12),
                                          regexp(r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,}$',
                                                 message="Password must include the following:"
@@ -37,6 +41,7 @@ class RegisterForm(FlaskForm):
     submit = SubmitField()
 
 
+# Displays fields for logging a user in including captcha
 class LoginForm(FlaskForm):
     email = StringField(validators=[DataRequired(), Email()])
     password = PasswordField(validators=[DataRequired()])

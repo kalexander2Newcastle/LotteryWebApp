@@ -67,45 +67,71 @@ def login():
         session['authentication_attempts'] = 0
 
     if form.validate_on_submit():
+        # Queries the database for a user with the same email as what was inputted in the form
         user = User.query.filter_by(email=form.email.data).first()
 
+        # If the user's information does not match any in the database, do the following:
         if not user \
                 or not bcrypt.checkpw(form.password.data.encode('utf-8'), user.password) \
-                or not pyotp.TOTP(user.pinkey).verify(form.pin.data):
+                or not pyotp.TOTP(user.pinkey).verify \
+                    (form.pin.data):  # If password and pin don't match, do the following:
+
+            # Increment authentication attempts by 1 per invalid login attempt
             session['authentication_attempts'] += 1
+
             # Log invalid login
             logging.warning('SECURITY - Invalid Login Attempt [%s, %s]',
                             form.email.data,
                             request.remote_addr
                             )
+            # If authentication attempts is more than or equal to 3, display message telling the user to reset
             if session.get('authentication_attempts') >= 3:
                 flash(Markup('Number of incorrect login attempts exceeded. '
                              'Please click <a href="/reset">here</a> to reset.'))
+
+                # Renders login page (without form)
                 return render_template('users/login.html')
+
+            # Tells the user to re-enter login details and displays remaining login attempts
             flash('Please check your login details and try again, {} login attempts remaining'
                   .format(3 - session.get('authentication_attempts')))
+
+            # Renders login page (with form)
             return render_template('users/login.html', form=form)
 
+        # If the user is found to be a match in the database, log the user into the web session
         if user:
             login_user(user)
+
+            # Log the event as a 'User log in'
             logging.warning('SECURITY - User log in [%s, %s, %s]',
                             current_user.id,
                             current_user.firstname,
                             request.remote_addr
                             )
+
+            # Sets the user's last login time to the current login
             user.last_login = user.current_login
+
+            # Sets the current login to the current date and time
             user.current_login = datetime.now()
+
+            # Adds updated user login times to database
             db.session.add(user)
             db.session.commit()
+
+            # If logged in as a user, redirect to profile, if logged in as an admin, redirect to admin page
             if current_user.role == 'user':
                 return redirect(url_for('users.profile'))
             else:
                 return redirect(url_for('admin.admin'))
 
+            # Else render the login page again
     else:
         return render_template('users/login.html', form=form)
 
 
+# Logout function: Logs event as 'User log out', logs user out of web session and renders main page
 @users_blueprint.route('/logout')
 def logout():
     logging.warning('SECURITY - User log out [%s, %s, %s]',
@@ -142,6 +168,7 @@ def account():
                            phone=current_user.phone)
 
 
+# Checks to verify whether the user's role is authenticated, logs event in case of Unauthorised Access
 def requires_roles(*roles):
     def wrapper(f):
         @wraps(f)

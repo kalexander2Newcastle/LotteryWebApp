@@ -28,6 +28,7 @@ class User(db.Model, UserMixin):
     # Define the relationship to Draw
     draws = db.relationship('Draw')
 
+    # User parameters
     def __init__(self, email, firstname, lastname, phone, password, role):
         self.email = email
         self.firstname = firstname
@@ -39,7 +40,6 @@ class User(db.Model, UserMixin):
         self.registered_on = datetime.now()
         self.current_login = None
         self.last_login = None
-
 
 
 class Draw(db.Model):
@@ -73,7 +73,7 @@ class Draw(db.Model):
         self.master_draw = master_draw
         self.lottery_round = lottery_round
 
-
+# Initialise database function, removes database, recreates all tables with admin as the first user
 def init_db():
     with app.app_context():
         db.drop_all()

@@ -1,7 +1,7 @@
 # IMPORTS
 import os
 
-from flask import Flask, render_template, session, redirect, url_for
+from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 
@@ -14,7 +14,7 @@ class SecurityFilter(logging.Filter):
         return 'SECURITY' in record.getMessage()
 
 
-# Logger
+# Logger - with applied level, filter, and formatter
 logger = logging.getLogger()
 file_handler = logging.FileHandler('lottery.log', 'a')
 file_handler.setLevel(logging.WARNING)
@@ -86,7 +86,7 @@ login_manager.init_app(app)
 
 from models import User
 
-
+# Loads the user
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(int(id))
