@@ -4,6 +4,7 @@ import os
 from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
+from flask_talisman import Talisman
 
 import logging
 
@@ -35,6 +36,16 @@ app.config['RECAPTCHA_PRIVATE_KEY'] = os.getenv('RECAPTCHA_PRIVATE_KEY')
 # initialise database
 db = SQLAlchemy(app)
 
+# Security Header
+csp = {
+    'default-src': ['\'self\'', 'https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css'],
+    'frame-src': ['\'self\'', 'https://www.google.com/recaptcha/', 'https://recaptcha.google.com/recaptcha/'],
+    'script-src': ['\'self\'', '\'unsafe-inline\'', 'https://www.google.com/recaptcha/',
+                                                    'https://www.gstatic.com/recaptcha/'],
+}
+
+
+talisman = Talisman(app, content_security_policy=csp)
 
 # Error pages
 @app.errorhandler(400)
