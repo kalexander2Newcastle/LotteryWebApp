@@ -16,3 +16,5 @@
 12/15/2022 06:52:04 PM : SECURITY - User log out [1, Alice, 127.0.0.1]
 12/15/2022 06:52:28 PM : SECURITY - User log in [2, John, 127.0.0.1]
 12/15/2022 07:27:17 PM : SECURITY - User log out [2, John, 127.0.0.1]
+12/16/2022 02:06:12 PM : SECURITY - User registration [Bob, 127.0.0.1]
+12/16/2022 02:06:37 PM : SECURITY - User registration [Carol, 127.0.0.1]
